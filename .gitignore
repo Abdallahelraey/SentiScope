@@ -160,3 +160,21 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+
+# DVC
+/data/**/*.dvc
+.dvc/cache
+.dvc/tmp
+.dvc/plots
+
+# Test coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# MLflow
+mlruns/
+
+# Logs
+*.log
