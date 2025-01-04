@@ -26,6 +26,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install pytest-cov black flake8
     
     - name: Run linting
       run: |
@@ -33,10 +34,14 @@ jobs:
         black --check src/SentiScope/components/data_ingestion.py
     - name: Run tests
       run: |
-        pytest tests/test_data_ingestion.py -v --cov=src/SentiScope/components/data_ingestion.py --cov-report=xml
+        pytest tests/test_data_ingestion.py -v --cov=src/SentiScope/components --cov-report=xml
     
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         fail_ci_if_error: true
+
+
+
+        
