@@ -1,10 +1,8 @@
-from SentiScope.utils.data_utils import download_data, unzip_data,load_data_to_dataframe
-from SentiScope.config.configuration import ConfigurationManager
+from SentiScope.utils.data_utils import(download_data, 
+                                         unzip_data,
+                                         load_data_to_dataframe)
 from SentiScope.entity import DataIngestionConfig
-from SentiScope.constants import *
-from SentiScope.utils.file_utils import *
-from SentiScope.utils.config_utils import *
-
+from SentiScope.logging import logger
 
 
 class DataIngestion:
