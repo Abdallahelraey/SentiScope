@@ -30,11 +30,10 @@ jobs:
     - name: Run linting
       run: |
         flake8 src/SentiScope/components/data_ingestion.py
-        black --check src/data/ingestion.py
-    
+        black --check src/SentiScope/components/data_ingestion.py
     - name: Run tests
       run: |
-        pytest tests/data/test_ingestion.py -v --cov=src/data/ingestion --cov-report=xml
+        pytest tests/test_data_ingestion.py -v --cov=src/SentiScope/components/data_ingestion.py --cov-report=xml
     
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
