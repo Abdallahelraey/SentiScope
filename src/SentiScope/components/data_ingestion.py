@@ -34,4 +34,3 @@ class DataIngestion:
         except Exception as e:
             logger.error(f"Error during data ingestion: {e}")
             raise
-        
