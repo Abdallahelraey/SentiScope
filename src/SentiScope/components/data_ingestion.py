@@ -23,11 +23,11 @@ class DataIngestion:
 
             logger.info(f"Unzipping data to {self.unzip_dir}")
             unzip_data(self.local_data_file, self.unzip_dir)
-            logger.info(f"Data unzipped successfully")
+            logger.info("Data unzipped successfully")
 
             logger.info(f"Loading data from {self.local_data_file}")
             df = load_data_to_dataframe(self.local_data_file)
-            logger.info(f"Data loaded into DataFrame")
+            logger.info("Data loaded into DataFrame")
 
             return df
 
