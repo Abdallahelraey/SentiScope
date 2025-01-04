@@ -29,7 +29,7 @@ jobs:
     
     - name: Run linting
       run: |
-        flake8 src/data/ingestion.py
+        flake8 src/SentiScope/components/data_ingestion.py
         black --check src/data/ingestion.py
     
     - name: Run tests
