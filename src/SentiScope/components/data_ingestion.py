@@ -1,3 +1,21 @@
+"""
+DataIngestion module for SentiScope
+
+This module provides a class for ingesting data from a URI, unzipping it, and loading it into a Pandas DataFrame.
+
+Attributes:
+    DataIngestionConfig: The configuration class for data ingestion.
+
+Classes:
+    DataIngestion: A class that handles data ingestion from a URI.
+
+Methods:
+    ingest_data_uri(self) -> pd.DataFrame: Downloads data from a URI, unzips it, and loads it into a Pandas DataFrame.
+
+Exceptions:
+    Exception: Raised if an error occurs during data ingestion.
+"""
+
 from SentiScope.utils.data_utils import (
     download_data,
     unzip_data,
