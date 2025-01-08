@@ -5,6 +5,7 @@ on:
     branches: [ main ]  
   pull_request:
     branches: [ main ]
+  workflow_dispatch:  
 
 jobs:
   build-and-deploy:
@@ -27,9 +28,13 @@ jobs:
           
       - name: Build documentation
         run: |
-          cd docs  # adjust if your Sphinx files are in a different directory
+          pwd
+          ls -la
+          cd docs || exit 1  # fail if docs directory doesn't exist
+          ls -la
           make html
-          
+          ls -la _build/html  # verify the built files
+
       - name: Deploy to GitHub Pages
         if: success() && github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v3
@@ -38,3 +43,6 @@ jobs:
           publish_dir: ./docs/_build/html 
           force_orphan: true  
           full_commit_message: 'Deploy documentation updates'
+
+
+          
