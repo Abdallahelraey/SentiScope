@@ -1,7 +1,12 @@
-from SentiScope.constants import *
-from SentiScope.utils.file_utils import *
-from SentiScope.utils.config_utils import *
-from SentiScope.entity import (DataIngestionConfig)
+from SentiScope.constants import (CONFIG_FILE_PATH,
+                                  PARAMS_FILE_PATH)
+from SentiScope.utils.file_utils import (create_directories,
+                                            get_size)
+from SentiScope.utils.config_utils import (read_yaml,
+                                           Settings,
+                                           get_settings)
+from SentiScope.entity import (DataIngestionConfig,
+                               DataProfilerConfig)
 
 class ConfigurationManager:
     def __init__(
@@ -27,3 +32,19 @@ class ConfigurationManager:
         )
 
         return data_ingestion_config
+    
+    def get_data_profiler_config(self) -> DataProfilerConfig:
+        config = self.config.data_profileing
+
+        create_directories([config.root_dir])
+
+        data_profileing_config = DataProfilerConfig(
+            root_dir=config.root_dir,
+            data_file=config.data_file,
+            profile_folder= config.profile_folder,
+            profile_file= config.profile_file,
+            text_column = config.text_column,
+            sentiment_column = config.sentiment_column
+        )
+
+        return data_profileing_config

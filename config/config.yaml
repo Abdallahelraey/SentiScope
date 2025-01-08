@@ -7,3 +7,10 @@ data_ingestion:
   local_data_file: artifacts/data_ingestion/data.zip
   unzip_dir: artifacts/data_ingestion
 
+data_profileing:
+  root_dir: artifacts/data_profileing
+  data_file: artifacts/data_ingestion/file.csv
+  profile_folder: artifacts/data_profileing
+  profile_file: artifacts/data_profile/report.json
+  text_column: "tweets"
+  sentiment_column: "labels"
