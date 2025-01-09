@@ -14,3 +14,21 @@ data_profileing:
   profile_file: artifacts/data_profile/report.json
   text_column: "tweets"
   sentiment_column: "labels"
+
+feature_transformation:
+  root_dir: artifacts/feature_transformation
+  data_file_path: artifacts/data_profileing
+  data_file: processed_data.csv
+  features_dir: artifacts/feature_transformation/features
+  text_column: "tweets"
+  sentiment_column: "labels"
+  train_size: 0.8
+  random_state: 42
+  vectorizer_type: 'bow'
+  max_features: 5000
+  ngram_range: [1, 2]
+  word2vec_params:
+    vector_size: 100
+    window: 5
+    min_count: 1
+    workers: 4

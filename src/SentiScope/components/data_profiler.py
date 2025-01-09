@@ -252,6 +252,30 @@ class SentimentDataProfiler:
         logger.info("Sentiment distribution analysis completed.")
         logger.info(f"Sentiment distribution plot saved to: {self.output_dir} / 'images' / 'sentiment_distribution.png' ")
         return sentiment_stats
+    
+    def save_dataframe(self, filename: str = "processed_data.csv") -> str:
+        """
+        Save the processed DataFrame to the output directory as a CSV file.
+        
+        Parameters:
+        -----------
+        filename : str, optional
+            The name of the output file. Default is "processed_data.csv".
+        
+        Returns:
+        --------
+        str
+            Path to the saved CSV file.
+        """
+        file_path = self.output_dir / filename
+        try:
+            self.df.to_csv(file_path, index=False)
+            logger.info(f"DataFrame successfully saved to {file_path}")
+            return str(file_path)
+        except Exception as e:
+            logger.error(f"Failed to save DataFrame: {e}")
+            raise
+
 
     def generate_report(self) -> str:
         """
@@ -260,6 +284,9 @@ class SentimentDataProfiler:
         Returns:
         str: Path to the generated report directory
         """
+        
+        self.save_dataframe()
+        
         logger.info("Generating profile report.")
         # Generate report components
         report = {
