@@ -32,3 +32,7 @@ feature_transformation:
     window: 5
     min_count: 1
     workers: 4
+
+model_development:
+  root_dir: artifacts/model_development
+  data_files_path: artifacts/feature_transformation
