@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple, Union, Optional
+import numpy as np
+from typing import Dict, List, Tuple, Union, Optional, Any
 
 @dataclass(frozen=True)
 class DataIngestionConfig:
@@ -34,3 +35,33 @@ class FeatureTransformConfig:
     max_features: int
     ngram_range: Tuple[int, int]
     word2vec_params: Optional[Dict] = None
+
+@dataclass(frozen=True)
+class ModelDevelopmentConfig:
+    root_dir: Path
+    data_files_path: Path
+
+    
+@dataclass
+class TrainingResult:
+    """Stores the results of model training and evaluation"""
+    model_name: str
+    metrics: Dict[str, Any]
+    predictions: np.ndarray
+    parameters: Dict[str, Any]
+    trained_model: Any  # Store the trained model instance
+    
+
+
+@dataclass
+class TransformerModelConfig:
+    """Configuration class for transformer-based model settings"""
+    root_dir: Path
+    data_file_path: Path
+    model_name: str
+    text_column: str
+    label_column: str
+    max_length: int
+    batch_size: int
+    num_labels: int
+    labels: List[str]  

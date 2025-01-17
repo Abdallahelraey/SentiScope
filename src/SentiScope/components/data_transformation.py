@@ -39,7 +39,10 @@ class FeatureTransformer:
 
     def _split_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Split the data into training and testing sets.
+        Split the data into training and testing sets and save them as CSV files.
+        
+        Returns:
+            Tuple[pd.DataFrame, pd.DataFrame]: Train and test dataframes
         """
         logger.info("Splitting data into train and test sets...")
         
@@ -63,7 +66,16 @@ class FeatureTransformer:
             stratify=stratify
         )
         
-        logger.info(f"Train set size: {len(train_df)}, Test set size: {len(test_df)}")
+        # Save train and test splits as CSV files
+        train_path = self.output_dir / 'train_split.csv'
+        test_path = self.output_dir / 'test_split.csv'
+        
+        train_df.to_csv(train_path, index=False)
+        test_df.to_csv(test_path, index=False)
+        
+        logger.info(f"Train set size: {len(train_df)}, saved to: {train_path}")
+        logger.info(f"Test set size: {len(test_df)}, saved to: {test_path}")
+        
         return train_df, test_df
 
     def _initialize_vectorizer(self):
@@ -148,18 +160,18 @@ class FeatureTransformer:
         joblib.dump(self.label_encoder, self.output_dir / 'label_encoder.joblib')
         
         return y_train, y_test
-
+    
     def transform_and_save(self) -> str:
         """
         Execute the complete transformation pipeline and save results.
         
         Returns:
-        str: Path to the output directory
+            str: Path to the output directory
         """
         try:
             logger.info("Starting feature transformation pipeline...")
             
-            # Split data
+            # Split data and save CSV files
             train_df, test_df = self._split_data()
             
             # Initialize vectorizer
@@ -193,6 +205,10 @@ class FeatureTransformer:
                     'X_test': X_test.shape,
                     'y_train': y_train.shape if y_train is not None else None,
                     'y_test': y_test.shape if y_test is not None else None
+                },
+                'split_files': {
+                    'train_split': 'train_split.csv',
+                    'test_split': 'test_split.csv'
                 }
             }
             

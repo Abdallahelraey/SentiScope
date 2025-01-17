@@ -1,69 +1,68 @@
-class SentimentDataProfiler:
-    """
-    SentimentDataProfiler
+"""
+SentimentDataProfiler
 
-    This class provides tools for profiling, analyzing, and reporting on sentiment analysis datasets. It supports 
-    preprocessing text data, analyzing text features, and generating visualizations and reports. The primary use case 
-    is for datasets containing textual data and optional sentiment labels.
+This class provides tools for profiling, analyzing, and reporting on sentiment analysis datasets. It supports 
+preprocessing text data, analyzing text features, and generating visualizations and reports. The primary use case 
+is for datasets containing textual data and optional sentiment labels.
 
-    Attributes:
-    -----------
-    config : DataProfilerConfig
-        Configuration object containing dataset paths, column names, and output directory details.
-    path : Path
-        Path to the dataset file.
-    df : pd.DataFrame
-        Loaded dataset as a pandas DataFrame.
-    text_column : str
-        Name of the column containing textual data.
-    sentiment_column : str, optional
-        Name of the column containing sentiment labels.
-    stop_words : set
-        Set of English stopwords used during text preprocessing.
-    lemmatizer : WordNetLemmatizer
-        Lemmatizer for reducing words to their base forms.
-    stemmer : PorterStemmer
-        Stemmer for reducing words to their root forms.
-    timestamp : str
-        Timestamp when the profiler is initialized, used for organizing output files.
-    output_dir : Path
-        Path to the directory where reports and visualizations are saved.
+Attributes:
+-----------
+config : DataProfilerConfig
+    Configuration object containing dataset paths, column names, and output directory details.
+path : Path
+    Path to the dataset file.
+df : pd.DataFrame
+    Loaded dataset as a pandas DataFrame.
+text_column : str
+    Name of the column containing textual data.
+sentiment_column : str, optional
+    Name of the column containing sentiment labels.
+stop_words : set
+    Set of English stopwords used during text preprocessing.
+lemmatizer : WordNetLemmatizer
+    Lemmatizer for reducing words to their base forms.
+stemmer : PorterStemmer
+    Stemmer for reducing words to their root forms.
+timestamp : str
+    Timestamp when the profiler is initialized, used for organizing output files.
+output_dir : Path
+    Path to the directory where reports and visualizations are saved.
 
-    Methods:
-    --------
-    _read_csv_file(file_path: Path) -> pd.DataFrame:
-        Reads and validates the CSV file containing the dataset.
+Methods:
+--------
+_read_csv_file(file_path: Path) -> pd.DataFrame:
+    Reads and validates the CSV file containing the dataset.
 
-    _validate_columns() -> None:
-        Ensures the required text and sentiment columns are present in the dataset.
+_validate_columns() -> None:
+    Ensures the required text and sentiment columns are present in the dataset.
 
-    _preprocess_text(text: str) -> List[str]:
-        Processes a single text entry by lowercasing, tokenizing, removing stopwords, and stemming.
+_preprocess_text(text: str) -> List[str]:
+    Processes a single text entry by lowercasing, tokenizing, removing stopwords, and stemming.
 
-    _get_initial_statistics() -> Dict[str, Any]:
-        Calculates basic statistics about the dataset, such as row/column counts and text lengths.
+_get_initial_statistics() -> Dict[str, Any]:
+    Calculates basic statistics about the dataset, such as row/column counts and text lengths.
 
-    _analyze_text_features() -> Dict[str, Any]:
-        Analyzes text features, such as word frequency and vocabulary size, and generates a word cloud.
+_analyze_text_features() -> Dict[str, Any]:
+    Analyzes text features, such as word frequency and vocabulary size, and generates a word cloud.
 
-    _analyze_sentiment_distribution() -> Optional[Dict[str, Any]]:
-        Analyzes the distribution of sentiment labels and generates a sentiment distribution plot.
+_analyze_sentiment_distribution() -> Optional[Dict[str, Any]]:
+    Analyzes the distribution of sentiment labels and generates a sentiment distribution plot.
 
-    generate_report() -> str:
-        Generates a comprehensive report on the dataset, including statistics, visualizations, and sentiment analysis 
-        (if applicable). Saves the report as JSON and generates a README file.
+generate_report() -> str:
+    Generates a comprehensive report on the dataset, including statistics, visualizations, and sentiment analysis 
+    (if applicable). Saves the report as JSON and generates a README file.
 
-    Usage:
-    ------
-    1. Initialize the profiler with a configuration object:
-        config = DataProfilerConfig(data_file="path/to/data.csv", text_column="text", sentiment_column="sentiment")
-        profiler = SentimentDataProfiler(config)
-    
-    2. Generate a report:
-        report_path = profiler.generate_report()
-    
-    3. Access the generated report and visualizations in the output directory.
-    """
+Usage:
+------
+1. Initialize the profiler with a configuration object:
+    config = DataProfilerConfig(data_file="path/to/data.csv", text_column="text", sentiment_column="sentiment")
+    profiler = SentimentDataProfiler(config)
+
+2. Generate a report:
+    report_path = profiler.generate_report()
+
+3. Access the generated report and visualizations in the output directory.
+"""
 
 
 import pandas as pd

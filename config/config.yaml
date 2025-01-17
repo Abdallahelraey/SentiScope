@@ -9,7 +9,7 @@ data_ingestion:
 
 data_profileing:
   root_dir: artifacts/data_profileing
-  data_file: artifacts/data_ingestion/file.csv
+  data_file: artifacts/data_ingestion
   profile_folder: artifacts/data_profileing
   profile_file: artifacts/data_profile/report.json
   text_column: "tweets"
@@ -34,5 +34,19 @@ feature_transformation:
     workers: 4
 
 model_development:
-  root_dir: artifacts/model_development
+  root_dir: artifacts/baseline_modeling
   data_files_path: artifacts/feature_transformation
+
+transformer_model:
+  root_dir: artifacts/transformer_models
+  data_file_path: artifacts/feature_transformation
+  model_name: cardiffnlp/twitter-roberta-base-sentiment
+  text_column: "tweets"
+  label_column: "labels"
+  max_length: 128
+  batch_size: 16
+  num_labels: 3
+  labels:
+    - bad
+    - neutral
+    - good
