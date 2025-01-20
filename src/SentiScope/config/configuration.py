@@ -9,7 +9,8 @@ from SentiScope.entity import (DataIngestionConfig,
                                DataProfilerConfig,
                                FeatureTransformConfig,
                                ModelDevelopmentConfig,
-                               TransformerModelConfig)
+                               TransformerModelConfig,
+                               MLflowConfig)
 from typing import Dict, List, Tuple, Union, Optional
 from pathlib import Path
 import json
@@ -237,3 +238,23 @@ class ConfigurationManager:
         )
         
         return transformer_config
+
+    def get_mlflow_config(self) -> MLflowConfig:
+        config = self.config.mlflow
+        create_directories([config.root_dir])
+
+        # Prepare the MLflow configuration object
+        mlflow_config = MLflowConfig(
+            root_dir = config.root_dir,
+            experiment_name=config.experiment.name,
+            run_name = config.experiment.run,
+            tracking_uri=config.experiment.tracking_uri,
+            artifact_location=config.experiment.artifact_location,  
+            default_tags=config.default_tags,
+            dynamic_tags=config.dynamic_tags,
+            logging=config.logging,
+            basemodel=config.basemodel,
+            advancedmodel=config.advancedmodel,
+        )
+
+        return mlflow_config

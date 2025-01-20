@@ -11,9 +11,9 @@ from SentiScope.logging import logger
 from SentiScope.entity import FeatureTransformConfig
 from pathlib import Path
 from typing import Dict, List, Tuple, Union, Optional
-
+from SentiScope.components.mlops.tracking import MLflowTracker
 class FeatureTransformer:
-    def __init__(self, config: FeatureTransformConfig):
+    def __init__(self, config: FeatureTransformConfig, mlflow_tracker: MLflowTracker):
         """
         Initialize the FeatureTransformer with configuration settings.
         
@@ -30,6 +30,10 @@ class FeatureTransformer:
         self.output_dir = Path(self.config.root_dir) / self.timestamp
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
+        self.mlflow_tracker = mlflow_tracker
+        self.mlflow_tracker.start_run(run_name="Data Transformation",nested=True)
+        logger.info("data transformation mlflow_tracker initialized successfully.")
+                       
         # Initialize encoders and vectorizers
         self.label_encoder = LabelEncoder()
         self.vectorizer = self.config.vectorizer_type
@@ -111,7 +115,11 @@ class FeatureTransformer:
             X_test = self.vectorizer.transform(test_df[self.config.text_column])
             
             # Save vectorizer
-            joblib.dump(self.vectorizer, self.output_dir / f'{self.config.vectorizer_type}_vectorizer.joblib')
+            vectorizer_path = self.output_dir / f'{self.config.vectorizer_type}_vectorizer.joblib'
+            joblib.dump(self.vectorizer, vectorizer_path)
+            
+            # Log vectorizer as an artifact
+            self.mlflow_tracker.log_artifact(str(vectorizer_path), "vectorizer")
             
         elif self.config.vectorizer_type == 'word2vec':
             # Initialize and train Word2Vec model
@@ -139,7 +147,11 @@ class FeatureTransformer:
             ])
             
             # Save Word2Vec model
-            self.word2vec_model.save(str(self.output_dir / 'word2vec_model.model'))
+            word2vec_path = self.output_dir / 'word2vec_model.model'
+            self.word2vec_model.save(str(word2vec_path))
+            
+            # Log Word2Vec model as an artifact
+            self.mlflow_tracker.log_artifact(str(word2vec_path), "word2vec_model")
             
         logger.info("Text feature transformation completed.")
         return X_train, X_test
@@ -157,7 +169,11 @@ class FeatureTransformer:
         y_test = self.label_encoder.transform(test_df[self.config.sentiment_column])
         
         # Save label encoder
-        joblib.dump(self.label_encoder, self.output_dir / 'label_encoder.joblib')
+        label_encoder_path = self.output_dir / 'label_encoder.joblib'
+        joblib.dump(self.label_encoder, label_encoder_path)
+        
+        # Log label encoder as an artifact
+        self.mlflow_tracker.log_artifact(str(label_encoder_path), "label_encoder")
         
         return y_train, y_test
     
@@ -171,8 +187,23 @@ class FeatureTransformer:
         try:
             logger.info("Starting feature transformation pipeline...")
             
+            # Log configuration parameters
+            self.mlflow_tracker.log_params({
+                'vectorizer_type': self.config.vectorizer_type,
+                'max_features': self.config.max_features,
+                'ngram_range': self.config.ngram_range,
+                'train_size': self.config.train_size,
+                'random_state': self.config.random_state
+            })
+            
             # Split data and save CSV files
             train_df, test_df = self._split_data()
+            
+            # Log train and test split sizes
+            self.mlflow_tracker.log_metrics({
+                'train_set_size': len(train_df),
+                'test_set_size': len(test_df)
+            })
             
             # Initialize vectorizer
             self._initialize_vectorizer()
@@ -189,6 +220,15 @@ class FeatureTransformer:
             if y_train is not None and y_test is not None:
                 np.save(self.output_dir / 'y_train.npy', y_train)
                 np.save(self.output_dir / 'y_test.npy', y_test)
+                
+            # Log transformed data shapes
+            self.mlflow_tracker.log_metrics({
+                'X_train_shape': X_train.shape[0],
+                'X_test_shape': X_test.shape[0],
+                'y_train_shape': y_train.shape[0] if y_train is not None else 0,
+                'y_test_shape': y_test.shape[0] if y_test is not None else 0
+            })
+            
             
             # Save configuration and metadata
             metadata = {
@@ -212,8 +252,16 @@ class FeatureTransformer:
                 }
             }
             
-            with open(self.output_dir / 'metadata.json', 'w') as f:
+            metadata_path = self.output_dir / 'metadata.json'
+            with open(metadata_path, 'w') as f:
                 json.dump(metadata, f, indent=4)
+                
+            # Log metadata as an artifact
+            self.mlflow_tracker.log_artifact(str(metadata_path), "metadata")
+            
+            # Log train and test split files as artifacts
+            self.mlflow_tracker.log_artifact(str(self.output_dir / 'train_split.csv'), "data_splits")
+            self.mlflow_tracker.log_artifact(str(self.output_dir / 'test_split.csv'), "data_splits")
             
             logger.info(f"Feature transformation completed. Results saved to: {self.output_dir}")
             return str(self.output_dir)
@@ -221,3 +269,6 @@ class FeatureTransformer:
         except Exception as e:
             logger.error(f"Error during feature transformation: {str(e)}")
             raise
+        finally:
+            # End the MLflow run
+            self.mlflow_tracker.end_run()

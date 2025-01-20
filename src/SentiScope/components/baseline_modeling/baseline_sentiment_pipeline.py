@@ -11,6 +11,7 @@ from datetime import datetime
 from SentiScope.logging import logger
 from datetime import datetime
 from SentiScope.entity import ModelDevelopmentConfig
+from SentiScope.components.mlops.tracking import MLflowTracker
 from SentiScope.components.baseline_modeling.training_manager import TrainingManager
 from SentiScope.components.baseline_modeling.logistic_regression_model import LogisticRegressionModel
 
@@ -18,7 +19,7 @@ import joblib
 class SentimentPipeline:
     """Coordinates all components of the sentiment analysis system"""
     
-    def __init__(self, config: ModelDevelopmentConfig):
+    def __init__(self, config: ModelDevelopmentConfig, mlflow_tracker: MLflowTracker):
         self.config = config
         self.data_files_path = self.config.data_files_path
         
@@ -31,7 +32,10 @@ class SentimentPipeline:
         self.models_dir = self.output_dir / 'models'
         self.models_dir.mkdir(exist_ok=True)
         
-        self.training_manager = TrainingManager(self.output_dir)
+        self.mlflow_tracker = mlflow_tracker
+        logger.info("Model baseline mlflow_tracker initialized successfully.")        
+        
+        self.training_manager = TrainingManager(self.output_dir, self.mlflow_tracker)
         self.models = {
             'logistic_regression': LogisticRegressionModel()
         }
@@ -78,8 +82,12 @@ class SentimentPipeline:
                 }
             }
             
-            with open(self.output_dir / 'metadata.json', 'w') as f:
+            metadata_path = self.output_dir / 'metadata.json'
+            with open(metadata_path, 'w') as f:
                 json.dump(metadata, f, indent=4)
+            
+            # Log metadata as an artifact
+            self.mlflow_tracker.log_artifact(str(metadata_path), "metadata")
             
             return X_train_sparse, X_test_sparse, y_train, y_test
             
@@ -93,6 +101,9 @@ class SentimentPipeline:
             model_path = self.models_dir / f"{name}.joblib"
             joblib.dump(model, model_path)
             logger.info(f"Saved model {name} to {model_path}")
+            
+            # Log the saved model as an artifact
+            self.mlflow_tracker.log_artifact(str(model_path), "models")
             return str(model_path)
         except Exception as e:
             logger.error(f"Error saving model {name}: {str(e)}")
@@ -100,6 +111,9 @@ class SentimentPipeline:
     
     def train_models(self):
         """Train all registered models"""
+        # Start a new MLflow run for the training pipeline
+        self.mlflow_tracker.start_run(run_name="Model_Training", nested=True)
+        
         try:
             logger.info("Starting model training pipeline")
             
@@ -140,8 +154,12 @@ class SentimentPipeline:
                 }
             }
             
-            with open(self.output_dir / 'training_summary.json', 'w') as f:
+            summary_path = self.output_dir / 'training_summary.json'
+            with open(summary_path, 'w') as f:
                 json.dump(summary, f, indent=4)
+            
+            # Log the training summary as an artifact
+            self.mlflow_tracker.log_artifact(str(summary_path), "training_summary")
             
             logger.info("Model training pipeline completed successfully")
             return results
@@ -149,3 +167,6 @@ class SentimentPipeline:
         except Exception as e:
             logger.error(f"Error in train_models: {str(e)}")
             raise
+        finally:
+            # End the MLflow run
+            self.mlflow_tracker.end_run()

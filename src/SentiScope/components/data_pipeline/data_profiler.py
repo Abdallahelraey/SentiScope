@@ -82,9 +82,9 @@ from datetime import datetime
 from pathlib import Path
 from SentiScope.logging import logger
 from SentiScope.entity import DataProfilerConfig
-
+from SentiScope.components.mlops.tracking import MLflowTracker
 class SentimentDataProfiler:
-    def __init__(self, config: DataProfilerConfig):
+    def __init__(self, config: DataProfilerConfig, mlflow_tracker: MLflowTracker):
         """
         Initialize the SentimentDataProfiler with a data path and column names.
         
@@ -101,6 +101,10 @@ class SentimentDataProfiler:
         self.df = self._read_csv_file(self.path)
         self.text_column = self.config.text_column
         self.sentiment_column = self.config.sentiment_column
+        
+        self.mlflow_tracker = mlflow_tracker
+        self.mlflow_tracker.start_run(run_name="sentiment_data_profiling",nested=True)
+        logger.info("data profiler mlflow_tracker initialized successfully.")
         
         # Initialize NLTK components
         try:
@@ -274,6 +278,7 @@ class SentimentDataProfiler:
         except Exception as e:
             logger.error(f"Failed to save DataFrame: {e}")
             raise
+        return file_path
 
 
     def generate_report(self) -> str:
@@ -283,41 +288,83 @@ class SentimentDataProfiler:
         Returns:
         str: Path to the generated report directory
         """
-        
-        self.save_dataframe()
-        
-        logger.info("Generating profile report.")
-        # Generate report components
-        report = {
-            'timestamp': self.timestamp,
-            'dataset_info': {
-                'text_column': self.text_column,
-                'sentiment_column': self.sentiment_column
-            },
-            'initial_statistics': self._get_initial_statistics(),
-            'text_analysis': self._analyze_text_features()
-        }
-        
-        if self.sentiment_column:
-            report['sentiment_analysis'] = self._analyze_sentiment_distribution()
-        
-        # Save report as JSON
-        report_path = self.output_dir / 'report.json'
-        with open(report_path, 'w', encoding='utf-8') as f:
-            json.dump(report, f, indent=4, ensure_ascii=False)
-        logger.info(f"Report generated successfully at {report_path}.")
-        # Generate a README with file descriptions
-        readme_content = f"""Data Profile Report
-        Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        try:
+            processed_file_path = self.save_dataframe()
+            
+            # Log the processed data as an artifact
+            self.mlflow_tracker.log_artifact(processed_file_path, "processed_data")
+            
+            
+            logger.info("Generating profile report.")
+            # Generate report components
+            report = {
+                'timestamp': self.timestamp,
+                'dataset_info': {
+                    'text_column': self.text_column,
+                    'sentiment_column': self.sentiment_column
+                },
+                'initial_statistics': self._get_initial_statistics(),
+                'text_analysis': self._analyze_text_features()
+            }
+            
+            if self.sentiment_column:
+                report['sentiment_analysis'] = self._analyze_sentiment_distribution()
+            
+            # Save report as JSON
+            report_path = self.output_dir / 'report.json'
+            with open(report_path, 'w', encoding='utf-8') as f:
+                json.dump(report, f, indent=4, ensure_ascii=False)
+            logger.info(f"Report generated successfully at {report_path}.")
+            
+            # Log the report as an artifact
+            self.mlflow_tracker.log_artifact(str(report_path), "report")
+            
+            # Generate a README with file descriptions
+            readme_content = f"""Data Profile Report
+            Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-        Files in this directory:
-        1. report.json - Complete analysis report in JSON format
-        2. images/wordcloud.png - Word cloud visualization of text data"""
+            Files in this directory:
+            1. report.json - Complete analysis report in JSON format
+            2. images/wordcloud.png - Word cloud visualization of text data"""
 
-        if self.sentiment_column:
-            readme_content += "\n3. images/sentiment_distribution.png - Distribution of sentiment labels"
+            if self.sentiment_column:
+                readme_content += "\n3. images/sentiment_distribution.png - Distribution of sentiment labels"
+                
+            readme_path = self.output_dir / 'README.txt'
 
-        with open(self.output_dir / 'README.txt', 'w') as f:
-            f.write(readme_content)
-        logger.info("README file created successfully.")
-        return str(self.output_dir)
+            with open(readme_path, 'w') as f:
+                f.write(readme_content)
+            logger.info("README file created successfully.")
+            
+            # Log the README as an artifact
+            self.mlflow_tracker.log_artifact(str(readme_path), "readme")
+            
+            # Log visualizations as artifacts
+            self.mlflow_tracker.log_artifact(str(self.output_dir / 'images' / 'wordcloud.png'), "images")
+            if self.sentiment_column:
+                self.mlflow_tracker.log_artifact(str(self.output_dir / 'images' / 'sentiment_distribution.png'), "images")
+            
+            # Log key statistics as metrics
+            initial_stats = report['initial_statistics']
+            self.mlflow_tracker.log_metrics({
+                'total_rows': initial_stats['total_rows'],
+                'total_columns': initial_stats['total_columns'],
+                'mean_text_length': initial_stats['text_length_stats']['mean'],
+                'median_text_length': initial_stats['text_length_stats']['median']
+            })
+            
+            text_analysis = report['text_analysis']
+            self.mlflow_tracker.log_metrics({
+                'total_words': text_analysis['total_words'],
+                'unique_words': text_analysis['unique_words'],
+                'average_words_per_text': text_analysis['average_words_per_text']
+            })
+            
+            if self.sentiment_column:
+                sentiment_analysis = report['sentiment_analysis']
+                for sentiment, count in sentiment_analysis['value_counts'].items():
+                    self.mlflow_tracker.log_metrics({f"sentiment_count_{sentiment}": count})
+            return str(self.output_dir)
+        finally:
+            # End the MLflow run
+            self.mlflow_tracker.end_run()

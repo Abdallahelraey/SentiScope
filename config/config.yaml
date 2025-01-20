@@ -50,3 +50,37 @@ transformer_model:
     - bad
     - neutral
     - good
+
+
+mlflow:
+  root_dir: artifacts/mlflow_tracking
+
+  experiment:
+    name: "sentiment_analysis_pipeline"
+    run: "v1"   
+    tracking_uri: artifacts/mlflow_tracking
+    artifact_location: artifacts/mlflow_tracking
+
+  default_tags:
+    project: "sentiment_analysis"
+    owner: "Abdallah"
+    environment: "dev"      
+    version: "1.0.0"
+    task: "text_classification"
+
+  dynamic_tags:
+    include_timestamp: true      
+    include_system_info: true    
+
+  logging:
+    enable_metrics: true        
+    enable_params: true         
+    enable_artifacts: true     
+
+  basemodel:
+    default_model_name: "logistic_regression"
+    version: "v1"
+
+  advancedmodel:
+    default_model_name: "roberta"
+    version: "v1"

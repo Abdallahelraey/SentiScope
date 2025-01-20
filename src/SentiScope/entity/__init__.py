@@ -65,3 +65,17 @@ class TransformerModelConfig:
     batch_size: int
     num_labels: int
     labels: List[str]  
+    
+    
+@dataclass(frozen=True)
+class MLflowConfig:
+    root_dir: Path
+    experiment_name: str
+    run_name: str
+    tracking_uri: str
+    artifact_location: Optional[str]
+    default_tags: Dict[str, str]
+    dynamic_tags: Dict[str, bool]
+    logging: Dict[str, bool]
+    basemodel: Dict[str, str]
+    advancedmodel: Dict[str, str]

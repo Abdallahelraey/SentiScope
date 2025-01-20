@@ -11,14 +11,18 @@ from datetime import datetime
 from SentiScope.logging import logger
 from datetime import datetime
 from SentiScope.entity import TrainingResult
+from SentiScope.components.mlops.tracking import MLflowTracker
+
 
 class TrainingManager:
     """Handles model training and evaluation"""
     
-    def __init__(self, output_dir: Path):
+    def __init__(self, output_dir: Path,  mlflow_tracker: MLflowTracker):
         self.training_history: List[TrainingResult] = []
         self.output_dir = output_dir
         logger.info(f"Initialized TrainingManager with output directory: {output_dir}")
+        self.mlflow_tracker = mlflow_tracker
+        logger.info("Traning managere mlflow_tracker initialized successfully.")
     
     def _validate_data_split(self, data_split):
         """Validate the data split dictionary"""
@@ -55,7 +59,7 @@ class TrainingManager:
             raise ValueError(msg)
         
         logger.info("Data split validation completed successfully")
-    
+
     def train_and_evaluate(self, model, model_name: str, data_split) -> TrainingResult:
         """Train a model and evaluate its performance"""
         try:
@@ -71,6 +75,10 @@ class TrainingManager:
                     msg = f"Model lacks required method: {method}"
                     logger.error(msg)
                     raise AttributeError(msg)
+
+            # Log model parameters
+            model_params = model.get_params()
+            self.mlflow_tracker.log_params(model_params)
             
             # Train the model
             logger.info(f"Training {model_name}...")
@@ -87,7 +95,15 @@ class TrainingManager:
                 predictions, 
                 output_dict=True
             )
-            
+
+            # Log metrics
+            self.mlflow_tracker.log_metrics({
+                'accuracy': metrics['accuracy'],
+                'weighted_precision': metrics['weighted avg']['precision'],
+                'weighted_recall': metrics['weighted avg']['recall'],
+                'weighted_f1': metrics['weighted avg']['f1-score']
+            })
+
             # Create result object with trained model
             result = TrainingResult(
                 model_name=model_name,
@@ -102,14 +118,22 @@ class TrainingManager:
             model_dir.mkdir(exist_ok=True)
             
             # Save predictions
-            np.save(model_dir / 'predictions.npy', predictions)
+            predictions_path = model_dir / 'predictions.npy'
+            np.save(predictions_path, predictions)
+            
+            # Log predictions as an artifact
+            self.mlflow_tracker.log_artifact(str(predictions_path), "predictions")            
             
             # Save metrics and parameters
-            with open(model_dir / 'results.json', 'w') as f:
+            results_path = model_dir / 'results.json'
+            with open(results_path, 'w') as f:
                 json.dump({
                     'metrics': metrics,
                     'parameters': model.get_params()
                 }, f, indent=4)
+            
+            # Log results as an artifact
+            self.mlflow_tracker.log_artifact(str(results_path), "results")
             
             self.training_history.append(result)
             
