@@ -103,7 +103,7 @@ class SentimentDataProfiler:
         self.sentiment_column = self.config.sentiment_column
         
         self.mlflow_tracker = mlflow_tracker
-        self.mlflow_tracker.start_run(run_name="sentiment_data_profiling",nested=True)
+        self.mlflow_tracker.start_run(run_name="Data Profiler",nested=True)
         logger.info("data profiler mlflow_tracker initialized successfully.")
         
         # Initialize NLTK components

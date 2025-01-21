@@ -138,6 +138,8 @@ class SentimentPipeline:
                 # Save the trained model from the training result
                 model_path = self.save_model(training_result.trained_model, name)
                 model_paths[name] = model_path
+                # Log the model to MLflow
+                self.mlflow_tracker.log_model(training_result.trained_model, "models")
             
             # Save final summary
             summary = {

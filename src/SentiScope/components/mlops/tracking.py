@@ -14,6 +14,7 @@ class MLflowTracker:
         self.experiment_name = self.config.experiment_name
         self.run_name = self.config.run_name
         self.tracking_uri = self.config.tracking_uri
+        self.artifact_location = self.config.artifact_location
         self.run = None
         
         try:

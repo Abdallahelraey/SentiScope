@@ -71,3 +71,6 @@ except Exception as e:
         raise e
 
 main_mlflow_tracker.end_run()
+
+
+# to run mlflow ui =>>>  {mlflow ui --backend-store-uri file:mlruns}
