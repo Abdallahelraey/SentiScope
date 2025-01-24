@@ -57,7 +57,7 @@ mlflow:
   experiment:
     name: "sentiment_analysis_pipeline"
     run: "v1"   
-    tracking_uri: mlruns
+    tracking_uri: "sqlite:///mlflow.db"
     artifact_location: mlruns/artifacts
 
   default_tags:

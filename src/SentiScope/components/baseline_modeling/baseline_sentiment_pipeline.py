@@ -138,8 +138,25 @@ class SentimentPipeline:
                 # Save the trained model from the training result
                 model_path = self.save_model(training_result.trained_model, name)
                 model_paths[name] = model_path
+                
                 # Log the model to MLflow
                 self.mlflow_tracker.log_model(training_result.trained_model, "models")
+                
+                # Construct the model URI dynamically
+                run_id = self.mlflow_tracker.run.info.run_id  # Get the current run ID
+                model_uri = f"runs:/{run_id}/models"
+                
+                # Register the model in MLflow Model Registry
+                self.mlflow_tracker.register_model(model_uri=model_uri, model_name=name)
+                
+                # Check if this model is the one specified in the config
+                if name == self.mlflow_tracker.config.basemodel.default_model_name: 
+                    # Transition the model to the "Production" stage
+                    self.mlflow_tracker.transition_model_stage(name)
+                    logger.info(f"Model '{name}' registered and transitioned to production.")
+                else:
+                    logger.info(f"Model '{name}' registered but not transitioned to production.")
+
             
             # Save final summary
             summary = {

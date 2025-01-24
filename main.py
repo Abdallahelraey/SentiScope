@@ -13,38 +13,38 @@ main_mlflow_tracker = MLflowTracker(config=mlflow_config)
 main_mlflow_tracker.start_run("MainPipeline")
 
 
-STAGE_NAME = "Data Ingestion stage"
-try:
-   logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
-   data_ingestion = DataIngestionPipeline(mlflow_tracker=main_mlflow_tracker)
-   data_ingestion.main()
-   logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
-except Exception as e:
-        logger.exception(e)
-        raise e
+# STAGE_NAME = "Data Ingestion stage"
+# try:
+#    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
+#    data_ingestion = DataIngestionPipeline(mlflow_tracker=main_mlflow_tracker)
+#    data_ingestion.main()
+#    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
+# except Exception as e:
+#         logger.exception(e)
+#         raise e
     
     
-STAGE_NAME = "Data Profiling stage"
-try:
-   logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
-   data_Profiler = DataProfilerPipeline(mlflow_tracker=main_mlflow_tracker)
-   data_Profiler.main()
-   logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
-except Exception as e:
-        logger.exception(e)
-        raise e
+# STAGE_NAME = "Data Profiling stage"
+# try:
+#    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
+#    data_Profiler = DataProfilerPipeline(mlflow_tracker=main_mlflow_tracker)
+#    data_Profiler.main()
+#    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
+# except Exception as e:
+#         logger.exception(e)
+#         raise e
      
 
 
-STAGE_NAME = "Data Transformation stage"
-try:
-   logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
-   data_transformer = DataTransformerPipeline(mlflow_tracker=main_mlflow_tracker)
-   data_transformer.main()
-   logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
-except Exception as e:
-        logger.exception(e)
-        raise e
+# STAGE_NAME = "Data Transformation stage"
+# try:
+#    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
+#    data_transformer = DataTransformerPipeline(mlflow_tracker=main_mlflow_tracker)
+#    data_transformer.main()
+#    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
+# except Exception as e:
+#         logger.exception(e)
+#         raise e
      
      
      
@@ -59,18 +59,20 @@ except Exception as e:
         raise e
 
 
-
-STAGE_NAME = "Advanced Modeling stage"
-try:
-   logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
-   transformer_model = TransformerModelPipeline(mlflow_tracker=main_mlflow_tracker)
-   transformer_model.main()
-   logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
-except Exception as e:
-        logger.exception(e)
-        raise e
+# STAGE_NAME = "Advanced Modeling stage"
+# try:
+#    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
+#    transformer_model = TransformerModelPipeline(mlflow_tracker=main_mlflow_tracker)
+#    transformer_model.main()
+#    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
+# except Exception as e:
+#         logger.exception(e)
+#         raise e
 
 main_mlflow_tracker.end_run()
 
 
-# to run mlflow ui =>>>  {mlflow ui --backend-store-uri file:mlruns}
+# To run mlflow ui [With a file base system as backend storage] =>>>  {mlflow ui --backend-store-uri file:mlruns}
+# To run mlflow ui [With a sqlite database as backend storage] =>>> {mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000} {mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host localhost --port 5000}
+# to serve a model from mlflow model registry =>>> {mlflow models serve --model-uri models:/logistic_regression/Production -p 1234 --no-conda} 
+# Visite ==> https://mlflow.org/docs/latest/getting-started/registering-first-model/step1-register-model.html
