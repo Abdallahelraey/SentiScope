@@ -2,6 +2,7 @@ import mlflow
 from SentiScope.logging import logger
 from typing import Any, Dict, Optional
 from functools import wraps
+import numpy as np
 from SentiScope.entity import MLflowConfig
 
 class MLflowTracker:
@@ -149,7 +150,7 @@ class MLflowTracker:
             logger.error(f"Stage transition failed: {str(e)}")
             raise
 
-    def load_model(self, model_name: str, stage: str = "Production"):
+    def load_model(self, model_name: str = "logistic_regression", stage: str = "Production"):
         """Load model from MLflow registry"""
         try:
             from mlflow.tracking import MlflowClient
@@ -163,8 +164,46 @@ class MLflowTracker:
         except Exception as e:
             logger.error(f"Model loading failed: {str(e)}")
 
+    def predict(self, production_model, X_test: np.ndarray) -> np.ndarray:
+        """Make predictions using the loaded model"""
+        try:
+            predictions = production_model.predict(X_test)
+            return predictions
+        except Exception as e:
+            logger.error(f"Prediction failed: {e}")
+            raise
+        
+    def log_sample_predictions(self, predictions: np.ndarray, num_samples: int = 5) -> Dict[str, Any]:
 
-
+        # Quick input validation
+        if not len(predictions):
+            return {}       
+        
+        # Ensure num_samples doesn't exceed predictions length
+        num_samples = min(num_samples, len(predictions))
+        
+        
+        # Randomly sample indices
+        sample_indices = np.random.choice(
+            len(predictions), 
+            size=num_samples, 
+            replace=False
+        )
+        
+        # Extract sampled predictions
+        sample_preds = predictions[sample_indices]
+        
+        # Create metrics dictionary with more concise naming
+        sample_metrics = {
+            f"pred_{i}": float(pred) 
+            for i, pred in enumerate(sample_preds)
+        }
+        
+        # Log metrics and return
+        mlflow.log_metrics(sample_metrics)
+        logger.info(f"Logged {num_samples} random predictions")
+        return sample_metrics        
+        
     def _validate_active_run(self):
         """Check for active run before logging operations"""
         if not mlflow.active_run():

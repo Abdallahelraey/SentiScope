@@ -7,12 +7,14 @@ import pandas as pd
 class TransformerModelPipeline:
     def __init__(self, mlflow_tracker: MLflowTracker):
         self.mlflow_tracker =mlflow_tracker
-    def main(self):
+    def main(self, data = None):
         config_manager = ConfigurationManager()
         transformer_config = config_manager.get_transformer_config()
         Transformer_Sentiment = TransformerSentiment(config=transformer_config, mlflow_tracker= self.mlflow_tracker)
-        data_path = transformer_config.data_file_path
-        data = pd.read_csv(data_path).head(50)
+        if data is None:
+            data_path = transformer_config.data_file_path
+            data = pd.read_csv(data_path).head(50)
+            
         results = Transformer_Sentiment.predict_dataframe_sentiment(data)
 
 

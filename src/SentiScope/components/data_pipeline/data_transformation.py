@@ -272,3 +272,26 @@ class FeatureTransformer:
         finally:
             # End the MLflow run
             self.mlflow_tracker.end_run()
+            
+    def preprocess_for_prediction(self, 
+                                data: Union[pd.DataFrame, List[str]], 
+                                vectorizer_path: str,
+                                label_encoder_path: Optional[str] = None) -> np.ndarray:
+        logger.info("Preprocessing data for prediction...")
+        
+        # Convert input to DataFrame if it's a list of strings
+        if isinstance(data, list):
+            data = pd.DataFrame({self.config.text_column: data})
+        
+        # Load the vectorizer
+        vectorizer = joblib.load(vectorizer_path)
+        
+        # Transform the text data
+        X_pred = vectorizer.transform(data[self.config.text_column])
+        
+        # Optionally load label encoder
+        if label_encoder_path is not None:
+            self.label_encoder = joblib.load(label_encoder_path)
+        
+        logger.info("Data preprocessing for prediction completed.")
+        return X_pred
