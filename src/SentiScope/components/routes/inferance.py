@@ -6,12 +6,16 @@ from SentiScope.components.mlops.tracking import MLflowTracker
 from SentiScope.config.configuration import ConfigurationManager
 from SentiScope.logging import logger
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+from fastapi import FastAPI, UploadFile, Form, File
+import pandas as pd
+import numpy as np
 import uvicorn
+import io
 import sys
 import os
 import mlflow
-import numpy as np
+
 
 # Configuration Management
 config = ConfigurationManager()
@@ -121,6 +125,7 @@ async def predict_route(request: PredictionRequest):
             label_encoder_path=LABEL_ENCODER_PATH
         )
 
+        predictions = list(predictions) if not isinstance(predictions, list) else predictions
         # Log completion of prediction
         logger.info(f">>>>>> Sentiment Prediction Completed <<<<<<<")
         
@@ -143,10 +148,108 @@ async def predict_route(request: PredictionRequest):
         # Raise HTTP exception with details
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+dataframe_sentiment_router = APIRouter(
+    prefix="/api/v1/sentiment",
+    tags=["api_v1", "sentiment"]
+)
+
+class DataFramePredictionRequest(BaseModel):
+    """
+    Pydantic model for DataFrame prediction request
+    Allows specifying a column to analyze or using the whole DataFrame
+    """
+    dataframe: dict  # Allows receiving DataFrame as a dictionary
+    text_column: Optional[str] = None  # Optional column name for text analysis
+
+
+
+@dataframe_sentiment_router.post("/predict_csv")
+async def predict_csv_route(
+    file: UploadFile = File(...), 
+    text_column: str = Form(...),
+):
+    try:
+        # --- 1. Read and Validate CSV ---
+        contents = await file.read()
+        df = pd.read_csv(io.BytesIO(contents))
+        
+        if df.empty:
+            raise HTTPException(status_code=400, detail="Empty CSV file")
+            
+        if text_column not in df.columns:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Text column '{text_column}' not found in CSV headers"
+            )
+
+        # --- 2. Clean and Validate Texts ---
+        # Handle missing values and convert to strings
+        df[text_column] = df[text_column].fillna('').astype(str)
+        texts = df[text_column].tolist()
+        
+        if not texts or all(text.strip() == '' for text in texts):
+            raise HTTPException(
+                status_code=400,
+                detail="No valid text data found in selected column"
+            )
+
+        # --- 3. Get Predictions ---
+        baseline_modeling = BaseLineInferancePipeline(
+            mlflow_tracker=get_mlflow_tracker()
+        )
+        
+        predictions = baseline_modeling.main(
+            model_name=MODEL_NAME,
+            stage=STAGE,
+            data=texts,
+            vectorizer_path=VECTORIZER_PATH,
+            label_encoder_path=LABEL_ENCODER_PATH
+        )
+
+        # --- 4. Validate Predictions ---
+        predictions = np.array(predictions)
+        
+        if predictions.size == 0 or len(predictions) != len(texts):
+            raise ValueError(
+                "Mismatch between input texts and predictions. "
+                f"Received {len(texts)} texts but {len(predictions)} predictions."
+            )
+
+        # --- 5. Prepare Results ---
+        result_df = df.copy()
+        result_df['predicted_sentiment'] = predictions
+        
+        # Convert NaN/None to empty strings for JSON safety
+        result_df = result_df.fillna('')
+
+        return {
+            "dataframe": result_df.to_dict(orient='records'),
+            "stats": {
+                "total_texts": len(texts),
+                "predictions_count": len(predictions),
+                "sample_predictions": list(predictions[:3])  # Convert to list for JSON serialization
+            }
+        }
+
+    except HTTPException as he:
+        # Re-raise existing HTTP exceptions
+        raise he
+        
+    except Exception as e:
+        logger.exception(f"CSV prediction failed: {str(e)}")
+        get_mlflow_tracker().log_metrics({"prediction_error": 1.0})
+        raise HTTPException(
+            status_code=500,
+            detail=f"Prediction failed: {str(e)}"
+        )
+
 # Application creation function
 def create_app():
     app = FastAPI()
     app.include_router(sentiment_router)
+    app.include_router(dataframe_sentiment_router)
     return app
 
 # Main entry point for running the server

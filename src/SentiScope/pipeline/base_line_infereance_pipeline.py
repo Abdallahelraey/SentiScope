@@ -17,4 +17,4 @@ class BaseLineInferancePipeline:
         samplee_metrics = self.mlflow_tracker.log_sample_predictions(predictions)
         original_labels = feature_transformer.label_encoder.inverse_transform(predictions)
         logger.info(f"Sample predictions: {original_labels}")
-        return samplee_metrics
+        return original_labels

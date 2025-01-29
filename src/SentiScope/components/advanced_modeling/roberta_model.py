@@ -89,3 +89,19 @@ class TransformerSentiment:
         finally:
             # End the MLflow run
             self.mlflow_tracker.end_run()
+
+    def predict_sentiment(self, input_data):
+        
+        # Check input type and route to appropriate prediction method
+        if isinstance(input_data, str):
+            # Single text prediction
+            return self.predict_single_sentiment(input_data)
+        
+        elif isinstance(input_data, pd.DataFrame):
+            # DataFrame prediction
+            return self.predict_dataframe_sentiment(input_data)
+        
+        else:
+            # Raise error for unsupported input type
+            raise TypeError(f"Unsupported input type: {type(input_data)}. "
+                            "Input must be a string or pandas DataFrame.")

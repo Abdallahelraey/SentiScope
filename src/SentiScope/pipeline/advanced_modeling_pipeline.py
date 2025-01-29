@@ -11,10 +11,7 @@ class TransformerModelPipeline:
         config_manager = ConfigurationManager()
         transformer_config = config_manager.get_transformer_config()
         Transformer_Sentiment = TransformerSentiment(config=transformer_config, mlflow_tracker= self.mlflow_tracker)
-        if data is None:
-            data_path = transformer_config.data_file_path
-            data = pd.read_csv(data_path).head(50)
-            
-        results = Transformer_Sentiment.predict_dataframe_sentiment(data)
+        results = Transformer_Sentiment.predict_sentiment(data)
+        return results
 
 

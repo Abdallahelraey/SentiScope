@@ -1,16 +1,18 @@
 SentiScope.components package
 =============================
 
-Submodules
-----------
+Subpackages
+-----------
 
-SentiScope.components.data\_ingestion module
---------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: SentiScope.components.data_ingestion
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   SentiScope.components.advanced_modeling
+   SentiScope.components.baseline_modeling
+   SentiScope.components.data_pipeline
+   SentiScope.components.mlops
+   SentiScope.components.routes
+   SentiScope.components.viewers
 
 Module contents
 ---------------
