@@ -1,5 +1,5 @@
 from SentiScope.pipeline.data_ingestion_pipeline import DataIngestionPipeline
-from SentiScope.pipeline.data_profiler_pipeline import DataProfilerPipeline
+from SentiScope.pipeline.data_profiler_pipeline import DataProfilerPipeline 
 from SentiScope.pipeline.data_transformation_pipeline import DataTransformerPipeline
 from SentiScope.pipeline.baseline_modeling_pipeline import BaseLineModelingPipeline
 from SentiScope.pipeline.base_line_infereance_pipeline import BaseLineInferancePipeline
@@ -92,5 +92,3 @@ main_mlflow_tracker.end_run()
 
 # To run mlflow ui [With a file base system as backend storage] =>>>  {mlflow ui --backend-store-uri file:mlruns}
 # To run mlflow ui [With a sqlite database as backend storage] =>>> {mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000} {mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host localhost --port 5000}
-# to serve a model from mlflow model registry =>>> {mlflow models serve --model-uri models:/logistic_regression/Production -p 1234 --no-conda} 
-# Visite ==> https://mlflow.org/docs/latest/getting-started/registering-first-model/step1-register-model.html
