@@ -59,12 +59,13 @@ main_mlflow_tracker.start_run("MainPipeline")
 #         logger.exception(e)
 #         raise e
 
+# X_test = ["This is a new text to predict that is good", "Another example text that is bad"]
 
 # STAGE_NAME = "Advanced Modeling stage"
 # try:
 #    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
 #    transformer_model = TransformerModelPipeline(mlflow_tracker=main_mlflow_tracker)
-#    transformer_model.main()
+#    transformer_model.main(data=X_test)
 #    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
 # except Exception as e:
 #         logger.exception(e)
@@ -75,12 +76,11 @@ STAGE_NAME = "Baseline Inferance stage"
 model_name = "logistic_regression"
 stage = "Production"
 X_test = ["This is a new text to predict that is good", "Another example text that is bad"]
-vectorizer_path  = r"artifacts\feature_transformation\20250122_122840\bow_vectorizer.joblib"
-label_encoder_path = r"artifacts\feature_transformation\20250122_122840\label_encoder.joblib"
+
 try:
    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
    baseline_modeling = BaseLineInferancePipeline(mlflow_tracker=main_mlflow_tracker)
-   baseline_modeling.main(model_name=model_name, stage=stage, data=X_test, vectorizer_path=vectorizer_path, label_encoder_path=label_encoder_path)
+   baseline_modeling.main(model_name=model_name, stage=stage, data=X_test)
    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
 except Exception as e:
         logger.exception(e)

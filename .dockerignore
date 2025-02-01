@@ -15,12 +15,12 @@ SentiScope-env/
 .git/
 
 # Project specific
-artifacts/
+# artifacts/
 airflow-docker/
-logs/
-mlruns/
-mlflow.db
-*.db
+# logs/
+# mlruns/
+# mlflow.db
+# *.db
 
 # Development
 .vscode/

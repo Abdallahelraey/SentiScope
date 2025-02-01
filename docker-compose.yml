@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - ../src:/app/src
+      - ../config:/app/config
+      - ../logs:/app/SentiScope_logs
+      - ../mlruns:/app/mlruns
+      - ../tests:/app/tests
+      - ../artifacts:/app/artifacts
+      - ../.env:/app/.env
+      - ../mlflow.db:/app/mlflow.db
+      - ../params.yaml:/app/params.yaml
+      - ../pytest.ini:/app/pytest.ini
+      - ../requirements_prod.txt:/app/requirements_prod.txt
+      - ../setup.py:/app/setup.py
+      - ../start.sh:/app/start.sh
+      - ../main.py:/app/main.py
+    ports:
+      - "5000:5000"
+      - "8080:8080"
+    command: ["./start.sh"]

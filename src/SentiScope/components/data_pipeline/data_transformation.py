@@ -12,8 +12,9 @@ from SentiScope.entity import FeatureTransformConfig
 from pathlib import Path
 from typing import Dict, List, Tuple, Union, Optional
 from SentiScope.components.mlops.tracking import MLflowTracker
+from SentiScope.config.configuration import ConfigurationManager
 class FeatureTransformer:
-    def __init__(self, config: FeatureTransformConfig, mlflow_tracker: MLflowTracker):
+    def __init__(self, config: FeatureTransformConfig, mlflow_tracker: MLflowTracker, create_timestamp: bool = True):
         """
         Initialize the FeatureTransformer with configuration settings.
         
@@ -24,12 +25,13 @@ class FeatureTransformer:
         self.config = config
         self.path = self.config.data_file_path
         self.df = pd.read_csv(self.path)
-        
-        # Create output directories
-        self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.output_dir = Path(self.config.root_dir) / self.timestamp
+        self.output_dir = Path(self.config.root_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+        if create_timestamp:
+            # Create output directories
+            self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            self.output_dir = Path(self.config.root_dir) / self.timestamp
+            
         self.mlflow_tracker = mlflow_tracker
         self.mlflow_tracker.start_run(run_name="Data Transformation",nested=True)
         logger.info("data transformation mlflow_tracker initialized successfully.")
@@ -273,25 +275,62 @@ class FeatureTransformer:
             # End the MLflow run
             self.mlflow_tracker.end_run()
             
+    def get_transformer_models_path(self):
+        """
+        Get the trained vectorizer and label encoder models.
+        
+        Returns:
+            Tuple[Path, Path]: Paths to the trained vectorizer and label encoder models.
+        """
+        report_data = ConfigurationManager().get_latest_report_baselinemodels()
+
+        if "timestamp" not in report_data:
+            raise KeyError("Missing 'timestamp' in metadata.json")
+
+        timestamp = report_data["timestamp"]
+
+        # Ensure the timestamp is a valid folder inside output_dir
+        model_dir = self.output_dir / timestamp
+
+        # Construct file paths
+        vectorizer_path = model_dir / f'{self.config.vectorizer_type}_vectorizer.joblib'
+        label_encoder_path = model_dir / 'label_encoder.joblib'
+
+        # Validate file existence
+        if not vectorizer_path.exists():
+            raise FileNotFoundError(f"Vectorizer file not found: {vectorizer_path}")
+
+        if not label_encoder_path.exists():
+            raise FileNotFoundError(f"Label encoder file not found: {label_encoder_path}")
+
+        return vectorizer_path, label_encoder_path
+            
+            
     def preprocess_for_prediction(self, 
                                 data: Union[pd.DataFrame, List[str]], 
-                                vectorizer_path: str,
+                                vectorizer_path: Optional[str] = None,
                                 label_encoder_path: Optional[str] = None) -> np.ndarray:
         logger.info("Preprocessing data for prediction...")
-        
+
+        # Use default paths if none are provided
+        if vectorizer_path is None or label_encoder_path is None:
+            default_vectorizer_path, default_label_encoder_path = self.get_transformer_models_path()
+            vectorizer_path = vectorizer_path or default_vectorizer_path
+            label_encoder_path = label_encoder_path or default_label_encoder_path
+
         # Convert input to DataFrame if it's a list of strings
         if isinstance(data, list):
             data = pd.DataFrame({self.config.text_column: data})
-        
+
         # Load the vectorizer
         vectorizer = joblib.load(vectorizer_path)
-        
+
         # Transform the text data
         X_pred = vectorizer.transform(data[self.config.text_column])
-        
+
         # Optionally load label encoder
         if label_encoder_path is not None:
             self.label_encoder = joblib.load(label_encoder_path)
-        
+
         logger.info("Data preprocessing for prediction completed.")
         return X_pred
