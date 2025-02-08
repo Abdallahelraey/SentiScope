@@ -15,7 +15,7 @@ from SentiScope.logging import logger
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2024, 1, 29),
+    "start_date": datetime(2024, 2, 8),
     "retries": 1,
     "retry_delay": timedelta(minutes=5),
 }
