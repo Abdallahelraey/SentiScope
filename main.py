@@ -14,15 +14,15 @@ main_mlflow_tracker = MLflowTracker(config=mlflow_config)
 main_mlflow_tracker.start_run("MainPipeline")
 
 
-# STAGE_NAME = "Data Ingestion stage"
-# try:
-#    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
-#    data_ingestion = DataIngestionPipeline(mlflow_tracker=main_mlflow_tracker)
-#    data_ingestion.main()
-#    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
-# except Exception as e:
-#         logger.exception(e)
-#         raise e
+STAGE_NAME = "Data Ingestion stage"
+try:
+   logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
+   data_ingestion = DataIngestionPipeline(mlflow_tracker=main_mlflow_tracker)
+   data_ingestion.main()
+   logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
+except Exception as e:
+        logger.exception(e)
+        raise e
     
     
 # STAGE_NAME = "Data Profiling stage"
@@ -72,19 +72,19 @@ main_mlflow_tracker.start_run("MainPipeline")
 #         raise e
 
 
-STAGE_NAME = "Baseline Inferance stage"
-model_name = "logistic_regression"
-stage = "Production"
-X_test = ["This is a new text to predict that is good", "Another example text that is bad"]
+# STAGE_NAME = "Baseline Inferance stage"
+# model_name = "logistic_regression"
+# stage = "Production"
+# X_test = ["This is a new text to predict that is good", "Another example text that is bad"]
 
-try:
-   logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
-   baseline_modeling = BaseLineInferancePipeline(mlflow_tracker=main_mlflow_tracker)
-   baseline_modeling.main(model_name=model_name, stage=stage, data=X_test)
-   logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
-except Exception as e:
-        logger.exception(e)
-        raise e
+# try:
+#    logger.info(f">>>>>>> stage {STAGE_NAME} started <<<<<<<") 
+#    baseline_modeling = BaseLineInferancePipeline(mlflow_tracker=main_mlflow_tracker)
+#    baseline_modeling.main(model_name=model_name, stage=stage, data=X_test)
+#    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<<\n\nx==============================x")
+# except Exception as e:
+#         logger.exception(e)
+#         raise e
 
 
 main_mlflow_tracker.end_run()
