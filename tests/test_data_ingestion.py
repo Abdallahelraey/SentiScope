@@ -2,7 +2,7 @@
 import pytest
 import pandas as pd
 from pathlib import Path
-from src.SentiScope.components.data_ingestion import DataIngestion
+from SentiScope.components.data_pipeline.data_ingestion import DataIngestion
 from src.SentiScope.config.configuration import ConfigurationManager
 from src.SentiScope.entity import DataIngestionConfig
 

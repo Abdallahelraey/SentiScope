@@ -31,3 +31,14 @@ class Settings(BaseSettings):
 
 def get_settings():
     return Settings()
+
+
+class Settings(BaseSettings):
+
+    APP_NAME: str
+    APP_VERSION: str
+    class Config:
+        env_file = ".env"
+
+def get_settings():
+    return Settings()

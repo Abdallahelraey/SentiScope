@@ -175,6 +175,7 @@ htmlcov/
 
 # MLflow
 mlruns/
+MLflow.db
 
 # Logs
 *.log

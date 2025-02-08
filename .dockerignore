@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.eggs/
+*.egg-info/
+
+# Environment
+.env
+SentiScope-env/
+.github/
+.git/
+
+# Project specific
+# artifacts/
+airflow-docker/
+# logs/
+# mlruns/
+# mlflow.db
+# *.db
+
+# Development
+.vscode/
+*.log
+build/

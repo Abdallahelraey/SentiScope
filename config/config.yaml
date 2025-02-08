@@ -7,3 +7,79 @@ data_ingestion:
   local_data_file: artifacts/data_ingestion/data.zip
   unzip_dir: artifacts/data_ingestion
 
+data_profileing:
+  root_dir: artifacts/data_profileing
+  data_file: artifacts/data_ingestion
+  profile_folder: artifacts/data_profileing
+  profile_file: artifacts/data_profile/report.json
+  text_column: "tweets"
+  sentiment_column: "labels"
+
+feature_transformation:
+  root_dir: artifacts/feature_transformation
+  data_file_path: artifacts/data_profileing
+  data_file: processed_data.csv
+  features_dir: artifacts/feature_transformation/features
+  text_column: "tweets"
+  sentiment_column: "labels"
+  train_size: 0.8
+  random_state: 42
+  vectorizer_type: 'bow'
+  max_features: 5000
+  ngram_range: [1, 2]
+  word2vec_params:
+    vector_size: 100
+    window: 5
+    min_count: 1
+    workers: 4
+
+model_development:
+  root_dir: artifacts/baseline_modeling
+  data_files_path: artifacts/feature_transformation
+
+transformer_model:
+  root_dir: artifacts/transformer_models
+  data_file_path: artifacts/feature_transformation
+  model_name: cardiffnlp/twitter-roberta-base-sentiment
+  text_column: "tweets"
+  label_column: "labels"
+  max_length: 128
+  batch_size: 16
+  num_labels: 3
+  labels:
+    - bad
+    - neutral
+    - good
+
+
+mlflow:
+  root_dir: mlruns
+  experiment:
+    name: "sentiment_analysis_pipeline"
+    run: "v1"   
+    tracking_uri: "sqlite:///mlflow.db"
+    artifact_location: mlruns/artifacts
+
+  default_tags:
+    project: "sentiment_analysis"
+    owner: "Abdallah"
+    environment: "dev"      
+    version: "1.0.0"
+    task: "text_classification"
+
+  dynamic_tags:
+    include_timestamp: true      
+    include_system_info: true    
+
+  logging:
+    enable_metrics: true        
+    enable_params: true         
+    enable_artifacts: true     
+
+  basemodel:
+    default_model_name: "logistic_regression"
+    version: "v1"
+
+  advancedmodel:
+    default_model_name: "roberta"
+    version: "v1"
