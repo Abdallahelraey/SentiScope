@@ -1,6 +1,6 @@
 
 # SentiScope
-
+![alt text](assets/SentiScope.png)
 ## Project Overview
 
 This project is a highly configurable and modular sentiment analysis pipeline that allows you to process, train, and evaluate models with minimal effort. It is designed to work both as an easy-to-use application for non-developers and as a flexible framework for developers looking to extend the system.
