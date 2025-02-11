@@ -24,7 +24,7 @@ jobs:
           pip install sphinx sphinx-rtd-theme sphinx-autodoc-typehints
           # Install common Sphinx extensions
           pip install sphinx-autodoc-typehints sphinx-copybutton sphinx-design myst-parser
-          pip install -r requirements_pord.txt
+          pip install -r requirements_prod.txt
           
       - name: Build documentation
         run: |
